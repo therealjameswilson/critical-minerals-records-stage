@@ -268,15 +268,14 @@
   }
 
   function renderPresentContext() {
-    const context = portal.presentContext || { questions: [], chronology: [], comparisons: [], report: {} };
-    $("presentQuestions").innerHTML = context.questions.map((item) => {
+    const context = portal.presentContext || { priorities: [], chronology: [], comparisons: [], report: {} };
+    $("presentRoutes").innerHTML = context.priorities.map((item) => {
       const attrs = item.pathwayId ? `data-pathway-jump="${escapeHtml(item.pathwayId)}"`
         : `data-problem-jump="${escapeHtml(item.problemId || "")}"`;
-      return `<button class="present-question" type="button" ${attrs}>
+      return `<button class="present-route" type="button" ${attrs}>
         <span class="source-tier ${normalize(item.tier).includes("analytical") ? "analysis" : ""}">${escapeHtml(item.tier)}</span>
         <strong>${escapeHtml(item.concern)}</strong>
-        <p>${escapeHtml(item.historicalQuestion)}</p>
-        <span class="question-action">Open historical route →</span>
+        <span class="route-action">Open documentary route →</span>
       </button>`;
     }).join("");
 
@@ -317,7 +316,6 @@
         <div class="problem-card-heading"><span>${isResearch ? "Research queue" : "Verified pathway evidence"}</span><b>${isResearch ? "—" : records.length}</b></div>
         <h3>${escapeHtml(problem.title)}</h3>
         <p>${escapeHtml(problem.summary)}</p>
-        <div class="historical-question"><strong>Historical question</strong><span>${escapeHtml(problem.historicalQuestion)}</span></div>
         <dl class="problem-facts">
           <div><dt>Periods</dt><dd>${escapeHtml(asArray(problem.periods).join(" · "))}</dd></div>
           <div><dt>Countries</dt><dd>${escapeHtml(asArray(problem.countries).slice(0, 4).join(", ") || "To be established")}</dd></div>
@@ -378,7 +376,6 @@
     const statusLabel = activeEra.status === "research" ? "Research queue" : activeEra.status === "verified" ? "Verified seed coverage" : "Official current evidence";
     $("timelineContext").innerHTML = `<p class="eyebrow" style="color:var(--teal)">${escapeHtml(activeEra.years)}</p>
       <h3>${escapeHtml(activeEra.label)}</h3>
-      <p class="era-question">${escapeHtml(activeEra.question)}</p>
       <span class="coverage-tag ${activeEra.status === "research" ? "research" : ""}">${escapeHtml(statusLabel)}</span>
       ${activeEra.bridgeNote ? `<p class="bridge-note">${escapeHtml(activeEra.bridgeNote)}</p>` : ""}
       ${activeEra.researchNote ? `<p class="research-gap">${escapeHtml(activeEra.researchNote)}</p>` : ""}
@@ -762,7 +759,7 @@
       if (problem) jumpToProblem(problem.dataset.problemJump || "");
       if (pathway) jumpToPathway(pathway.dataset.pathwayJump || "");
     });
-    $("presentQuestions").addEventListener("click", (event) => {
+    $("presentRoutes").addEventListener("click", (event) => {
       const problem = event.target.closest("[data-problem-jump]");
       const pathway = event.target.closest("[data-pathway-jump]");
       if (problem) jumpToProblem(problem.dataset.problemJump || "");

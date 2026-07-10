@@ -1300,9 +1300,9 @@ main { min-width: 0; }
 
 .subsection-title { margin: 0 0 10px; color: var(--navy-2); font-size: 17px; }
 [data-theme="dark"] .subsection-title { color: #a9d5ef; }
-.present-question-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.present-route-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-.present-question {
+.present-route {
   min-height: 146px;
   padding: 14px;
   color: var(--ink);
@@ -1313,10 +1313,9 @@ main { min-width: 0; }
   cursor: pointer;
 }
 
-.present-question:hover { border-color: var(--teal); }
-.present-question strong { display: block; margin-top: 9px; font-size: 15px; }
-.present-question p { margin: 5px 0 10px; color: var(--muted); font-size: 12px; }
-.question-action { color: var(--teal); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.present-route:hover { border-color: var(--teal); }
+.present-route strong { display: block; margin-top: 9px; font-size: 15px; }
+.route-action { display: block; margin-top: 12px; color: var(--teal); font-size: 10px; font-weight: 700; text-transform: uppercase; }
 
 .context-chronology { padding: 18px; background: var(--paper); border: 1px solid var(--line); }
 .operations-timeline.compact .operation-row { grid-template-columns: 58px 12px 1fr; }
@@ -1362,11 +1361,6 @@ main { min-width: 0; }
 .problem-card-heading b { color: var(--navy-2); font-size: 18px; }
 .problem-card h3 { margin: 9px 0 6px; font-size: 17px; }
 .problem-card > p { margin: 0; color: var(--muted); font-size: 12px; }
-.historical-question { margin-top: 14px; padding: 10px; background: var(--soft-blue); }
-.historical-question strong,
-.historical-question span { display: block; }
-.historical-question strong { color: var(--teal); font-size: 9px; text-transform: uppercase; }
-.historical-question span { margin-top: 3px; font-family: Georgia, "Times New Roman", serif; font-size: 14px; }
 .problem-facts { margin: 12px 0 0; }
 .problem-facts div { display: grid; grid-template-columns: 68px 1fr; gap: 8px; padding: 6px 0; border-top: 1px solid var(--line); }
 .problem-facts dt { color: var(--muted); font-size: 9px; font-weight: 700; text-transform: uppercase; }
@@ -1412,7 +1406,6 @@ main { min-width: 0; }
 .era-button[data-status="verified"]::after { background: var(--teal); }
 .era-button[data-status="official"]::after { background: var(--cyan); }
 .era-button.active small { color: rgba(255,255,255,.68); }
-.era-question { font-family: Georgia, "Times New Roman", serif; font-size: 18px !important; }
 .bridge-note { padding: 9px; background: var(--soft-cyan); border-left: 3px solid var(--teal); color: var(--ink) !important; font-size: 11px !important; }
 .era-concepts { margin: 16px 0 0; }
 .era-concepts > div { padding: 9px 0; border-top: 1px solid var(--line); }
@@ -1514,7 +1507,7 @@ main { min-width: 0; }
   .hero-inner { padding: 32px 16px 26px; }
   .hero-copy h2 { font-size: 39px; }
   .hero-section .metrics-strip { grid-template-columns: repeat(2, 1fr); }
-  .present-question-grid,
+  .present-route-grid,
   .problem-grid,
   .pathway-comparison,
   .country-facts,

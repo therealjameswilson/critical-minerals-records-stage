@@ -116,6 +116,8 @@ def test_portal_shell_has_historical_research_sections_and_no_operational_ui():
     assert "Clearance Status" not in html
     assert "Export Notes as Word" not in html
     assert "Analytical Notes" not in html
+    assert "Historical question" not in html
+    assert "historical questions" not in html.lower()
 
 
 def test_portal_data_covers_full_historical_frame():
@@ -130,6 +132,8 @@ def test_portal_data_covers_full_historical_frame():
     assert "frusPathways" in source
     assert "frusAnnotations" in source
     assert "presentContext" in source
+    assert "historicalQuestion" not in source
+    assert "priorities:" in source
     assert source.count('status: "verified"') >= 9
     assert source.count('status: "research"') >= 12
 

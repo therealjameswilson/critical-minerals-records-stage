@@ -15,9 +15,10 @@ Live site:
 
 ## Historical Operating Picture
 
-The portal is organized around a question, not a commodity list: how did U.S.
-officials understand and secure access to strategically important materials as
-war, technology, alliances, markets, and supplier geography changed?
+The portal is organized around diplomatic problems rather than a commodity list.
+It documents how U.S. officials understood and secured access to strategically
+important materials as war, technology, alliances, markets, and supplier
+geography changed.
 
 The historical frame begins in 1861 and moves through:
 
@@ -67,13 +68,13 @@ proxies are visibly marked for review.
 
 - **Why History Matters:** the FRUS-led purpose, literal metadata search, and
   distinctions among documentary metadata, editorial synthesis, and comparison.
-- **The Present Problem:** current official and analytical concerns translated
-  into historical questions, not an implementation dashboard.
+- **The Present Problem:** current official and analytical concerns linked to
+  documentary pathways, not an implementation dashboard.
 - **Recurring Diplomatic Problems:** nine problem lenses, with unsupported
   themes explicitly retained as research queues.
 - **FRUS Pathways:** three verified documentary routes and two research queues
   built from the records already present in this repository.
-- **Conceptual Timeline:** era-based questions, terminology, institutions,
+- **Conceptual Timeline:** era-based terminology, institutions,
   instruments, tensions, and source-backed milestones.
 - **Country and Mineral Histories:** curated relationship arcs where evidence
   permits, plus historical search language and visible gaps.
