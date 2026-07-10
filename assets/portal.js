@@ -19,6 +19,20 @@
     .flatMap(([dateKey, rows]) => asArray(rows).map((row) => ({ ...row, dateKey })))
     .sort((a, b) => Number(b.y || 0) - Number(a.y || 0) || text(a.t).localeCompare(text(b.t)));
 
+  const frusIndex = window.FRUS_SUBJECTS_INDEX || { meta: {}, subjects: [], records: [] };
+  const frusSubjects = asArray(frusIndex.subjects);
+  const frusVerifiedByUrl = new Map(events
+    .filter((event) => normalize(event.st || event.s) === "frus" && normalize(event.cf) === "high" && !/placeholder|sample/.test(normalize(event.t)))
+    .map((event) => [event.u, event]));
+  const frusDocuments = asArray(frusIndex.records).map((row) => {
+    const [volume, documentId, start, end, mask, context] = row;
+    const url = `${frusIndex.meta?.documentBase || "https://history.state.gov/historicaldocuments/"}${volume}/${documentId}`;
+    return {
+      volume, documentId, start: Number(start || 0), end: Number(end || start || 0),
+      mask: Number(mask || 0), context: text(context), url, verified: frusVerifiedByUrl.get(url) || null
+    };
+  });
+
   const sourceTypes = unique(events.flatMap((event) => asArray(event.st || event.s))).sort();
   const mineralValues = unique(events.flatMap((event) => asArray(event.mi))).sort();
   const countryValues = unique(events.flatMap((event) => asArray(event.cty))).sort();
@@ -33,6 +47,8 @@
     stage: "",
     era: ""
   };
+
+  const frusState = { query: "", subject: "", from: "", to: "", limit: 36 };
 
   let activeEra = portal.eras.find((era) => era.id === "early-cold-war") || portal.eras[0] || null;
 
@@ -382,15 +398,107 @@
     }).join("");
   }
 
+  function frusSubjectNames(record) {
+    return frusSubjects.filter((subject) => record.mask & Number(subject.bit || 0)).map((subject) => subject.name);
+  }
+
+  function frusVolumeLabel(volumeId) {
+    let label = text(volumeId).replace(/^frus/i, "");
+    label = label.replace(/Supp/g, " Supplement");
+    label = label.replace(/ve(\d+)/gi, (_match, number) => `, Electronic Volume ${Number(number)}`);
+    label = label.replace(/v(\d+)/gi, (_match, number) => `, Volume ${Number(number)}`);
+    label = label.replace(/p(\d+)/gi, (_match, number) => `, Part ${Number(number)}`);
+    return `FRUS ${label}`;
+  }
+
+  function frusHaystack(record) {
+    return normalize([
+      record.volume, record.documentId, record.start, record.end, record.context,
+      frusSubjectNames(record), record.verified?.t, record.verified?.de,
+      record.verified?.mi, record.verified?.cty
+    ].flat().join(" "));
+  }
+
+  function filteredFrus() {
+    const query = frusState.query.trim();
+    const tokens = queryTokens(query);
+    const queryRange = queryEraRange(query);
+    const subjectBit = Number(frusState.subject || 0);
+    const from = Number(frusState.from || 0);
+    const to = Number(frusState.to || 0);
+    return frusDocuments.filter((record) => {
+      if (subjectBit && !(record.mask & subjectBit)) return false;
+      if (from && record.end < from) return false;
+      if (to && record.start > to) return false;
+      if (queryRange && (record.end < queryRange.start || record.start > queryRange.end)) return false;
+      if (tokens.length && !tokens.every((token) => frusHaystack(record).includes(token))) return false;
+      return true;
+    });
+  }
+
+  function frusCard(record) {
+    const subjects = frusSubjectNames(record);
+    const verified = record.verified;
+    const title = verified?.t || `${frusVolumeLabel(record.volume)} · ${record.documentId}`;
+    const span = record.start === record.end ? record.start : `${record.start}-${record.end}`;
+    const verifiedSummary = verified?.de
+      ? `<p class="frus-verified-summary"><strong>Verified summary:</strong> ${escapeHtml(verified.de)}</p>` : "";
+    return `<article class="record-card high frus-record-card">
+      <div class="record-meta"><span>${escapeHtml(span)}</span><span>·</span><span>${escapeHtml(record.volume)}</span><span>·</span><span>${escapeHtml(record.documentId)}</span></div>
+      <h3>${escapeHtml(title)}</h3>
+      <p><strong>Volume context:</strong> ${escapeHtml(record.context)}</p>
+      ${verifiedSummary}
+      <div class="badge-row" style="margin-top:9px">
+        <span class="badge official">Official USG</span>
+        ${verified ? '<span class="badge verified">Verified document metadata</span>' : ""}
+        ${subjects.map((subject) => `<span class="badge">${escapeHtml(subject)}</span>`).join("")}
+      </div>
+      <div class="record-actions"><a class="text-link" href="${escapeHtml(record.url)}" target="_blank" rel="noopener">Open FRUS document ↗</a></div>
+    </article>`;
+  }
+
+  function populateFrusControls() {
+    const subjectOptions = ['<option value="">All four authorities</option>']
+      .concat(frusSubjects.map((subject) => `<option value="${subject.bit}"${text(subject.bit) === frusState.subject ? " selected" : ""}>${escapeHtml(subject.name)}</option>`));
+    $("frusSubject").innerHTML = subjectOptions.join("");
+    const start = Number(frusIndex.meta?.yearStart || 1861);
+    const end = Number(frusIndex.meta?.yearEnd || 1992);
+    const years = Array.from({ length: Math.max(0, end - start + 1) }, (_value, index) => start + index);
+    $("frusFromYear").innerHTML = ['<option value="">Earliest</option>']
+      .concat(years.map((year) => `<option value="${year}"${text(year) === frusState.from ? " selected" : ""}>${year}</option>`)).join("");
+    $("frusToYear").innerHTML = ['<option value="">Latest</option>']
+      .concat(years.map((year) => `<option value="${year}"${text(year) === frusState.to ? " selected" : ""}>${year}</option>`)).join("");
+    $("frusQuery").value = frusState.query;
+  }
+
   function renderFrus() {
-    const frus = events.filter((event) => normalize(event.st || event.s) === "frus");
-    const volumes = unique(frus.map((event) => text(event.u).match(/historicaldocuments\/([^/]+)/)?.[1] || ""));
-    const minerals = unique(frus.flatMap((event) => eventField(event, "mineral")));
+    const meta = frusIndex.meta || {};
+    const matches = filteredFrus();
+    const visible = matches.slice(0, frusState.limit);
+    const span = meta.yearStart && meta.yearEnd ? `${meta.yearStart}-${meta.yearEnd}` : "Undated";
     $("frusStats").innerHTML = [
-      [frus.length, "Indexed documents"], [volumes.length, "FRUS volumes"], [minerals.length, "Minerals tagged"]
+      [Number(meta.documents || frusDocuments.length).toLocaleString(), "Mapped documents"],
+      [Number(meta.volumes || 0).toLocaleString(), "FRUS volumes"],
+      [span, "Volume span"],
+      [frusSubjects.length, "Subject authorities"]
     ].map(([value, label]) => `<div class="frus-stat"><strong>${value}</strong><span>${escapeHtml(label)}</span></div>`).join("");
-    $("frusRecords").innerHTML = frus.length ? frus.slice(0, 8).map((event) => recordCard(event, true)).join("") : '<div class="empty-state">No FRUS records indexed.</div>';
-    const prompts = ["cobalt during the early Cold War", "strategic materials stockpiling", "accessible foreign sources", "Tropical Africa cobalt copper"];
+
+    $("frusAuthorityList").innerHTML = frusSubjects.map((subject) => {
+      const active = text(subject.bit) === frusState.subject ? " active" : "";
+      return `<button class="frus-authority-row${active}" type="button" data-frus-subject="${subject.bit}">
+        <span><strong>${escapeHtml(subject.name)}</strong><small>Office of the Historian subject authority</small></span>
+        <b>${Number(subject.references || 0).toLocaleString()}</b>
+      </button>`;
+    }).join("");
+
+    $("frusResultsCount").textContent = `${matches.length.toLocaleString()} document${matches.length === 1 ? "" : "s"}`;
+    $("frusCorpusNote").innerHTML = `<strong>Discovery note:</strong> ${escapeHtml(meta.caveat || "Review each document before citation.")} Volume years and chapter headings provide navigation context; they are not document-level dates or titles.`;
+    $("frusRecords").innerHTML = visible.length
+      ? visible.map(frusCard).join("")
+      : '<div class="empty-state"><strong>No FRUS authority records match this view.</strong><br>Broaden the search terms, subject authority, or volume years.</div>';
+    $("frusLoadMore").hidden = visible.length >= matches.length;
+    $("frusLoadMore").textContent = `Show ${Math.min(36, matches.length - visible.length).toLocaleString()} more documents`;
+    const prompts = ["strategic materials", "Chile", "bauxite", "sea bed mining", "cobalt during World War II"];
     $("frusQueries").innerHTML = prompts.map((prompt) => `<button class="filter-chip" type="button" data-frus-query="${escapeHtml(prompt)}">${escapeHtml(prompt)}</button>`).join("");
   }
 
@@ -408,6 +516,10 @@
     Object.entries(keys).forEach(([stateKey, param]) => {
       if (searchState[stateKey]) params.set(param, searchState[stateKey]);
     });
+    const frusKeys = { query: "frus_q", subject: "frus_subject", from: "frus_from", to: "frus_to" };
+    Object.entries(frusKeys).forEach(([stateKey, param]) => {
+      if (frusState[stateKey]) params.set(param, frusState[stateKey]);
+    });
     const query = params.toString();
     history.replaceState(null, "", `${location.pathname}${query ? `?${query}` : ""}${location.hash || ""}`);
   }
@@ -420,16 +532,25 @@
     searchState.source = params.get("source") || "";
     searchState.stage = params.get("stage") || "";
     searchState.era = params.get("era") || "";
+    frusState.query = params.get("frus_q") || "";
+    frusState.subject = params.get("frus_subject") || "";
+    frusState.from = params.get("frus_from") || "";
+    frusState.to = params.get("frus_to") || "";
     if (searchState.era) activeEra = portal.eras.find((era) => era.id === searchState.era) || activeEra;
   }
 
   function applyGlobalQuery(query) {
     searchState.query = query.trim();
+    frusState.query = searchState.query;
+    frusState.limit = 36;
     $("evidenceQuery").value = searchState.query;
     $("globalQuery").value = searchState.query;
+    $("frusQuery").value = frusState.query;
     renderEvidence();
+    renderFrus();
     updateUrl();
-    $("evidence").scrollIntoView({ behavior: "smooth", block: "start" });
+    const destination = filteredFrus().length ? "frus" : "evidence";
+    $(destination).scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function clearFilters() {
@@ -497,9 +618,46 @@
     $("frusQueries").addEventListener("click", (event) => {
       const button = event.target.closest("[data-frus-query]");
       if (!button) return;
-      searchState.source = "FRUS";
-      $("filterSource").value = "FRUS";
-      applyGlobalQuery(button.dataset.frusQuery || "");
+      frusState.query = button.dataset.frusQuery || "";
+      frusState.limit = 36;
+      $("frusQuery").value = frusState.query;
+      renderFrus();
+      updateUrl();
+    });
+
+    $("frusAuthorityList").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-frus-subject]");
+      if (!button) return;
+      frusState.subject = frusState.subject === button.dataset.frusSubject ? "" : button.dataset.frusSubject;
+      frusState.limit = 36;
+      $("frusSubject").value = frusState.subject;
+      renderFrus();
+      updateUrl();
+    });
+
+    $("frusQuery").addEventListener("input", () => {
+      frusState.query = $("frusQuery").value;
+      frusState.limit = 36;
+      renderFrus();
+      updateUrl();
+    });
+    [["frusSubject", "subject"], ["frusFromYear", "from"], ["frusToYear", "to"]].forEach(([id, key]) => {
+      $(id).addEventListener("change", () => {
+        frusState[key] = $(id).value;
+        frusState.limit = 36;
+        renderFrus();
+        updateUrl();
+      });
+    });
+    $("frusClear").addEventListener("click", () => {
+      Object.assign(frusState, { query: "", subject: "", from: "", to: "", limit: 36 });
+      populateFrusControls();
+      renderFrus();
+      updateUrl();
+    });
+    $("frusLoadMore").addEventListener("click", () => {
+      frusState.limit += 36;
+      renderFrus();
     });
 
     const filterBindings = {
@@ -546,10 +704,17 @@
     document.documentElement.dataset.theme = saved || preferred;
   }
 
+  function restoreHashPosition() {
+    const id = decodeURIComponent(location.hash.replace(/^#/, ""));
+    const target = id ? document.getElementById(id) : null;
+    if (target) requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
+  }
+
   function init() {
     initTheme();
     loadUrlState();
     populateControls();
+    populateFrusControls();
     renderMetrics();
     renderPromptRow();
     renderCommandCenter();
@@ -561,6 +726,7 @@
     renderFrus();
     renderEvidence();
     bindEvents();
+    restoreHashPosition();
   }
 
   init();

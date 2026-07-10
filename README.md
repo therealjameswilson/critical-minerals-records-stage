@@ -79,8 +79,10 @@ proxies are visibly marked for review.
 - **Country Intelligence:** coverage and research priorities for major producer
   and partner countries.
 - **Administration Explorer:** indexed-record coverage by administration.
-- **FRUS Critical Minerals Index:** high-priority discovery across FRUS
-  documents, volumes, minerals, countries, and historical assumptions.
+- **FRUS Critical Minerals Index:** 16,811 metadata-only document links across
+  545 volumes. It includes every document assigned to the Minerals and metals
+  or Natural resources authorities, plus exact Bauxite and Sea bed mining
+  assignments, with official volume context and direct HistoryAtState links.
 - **Evidence Explorer:** filterable records with confidence, caveats, official
   links, NARA discovery, and shareable URLs.
 
@@ -120,6 +122,7 @@ The browser cache surfaces these fields through
 - `records-stage.html`: GitHub Pages entry point with embedded compact metadata
 - `assets/portal.css`: responsive, accessible portal design
 - `assets/portal.js`: search, deep links, map, timeline, indexes, and filters
+- `assets/frus-subjects-index.js`: generated FRUS subject-authority discovery index
 - `data/portal-data.js`: eras, minerals, countries, administrations, and source roles
 - `research/Landau-Critical-Minerals-2026.md`: supplied analytical report,
   preserved outside the metadata cache
@@ -144,6 +147,25 @@ open http://localhost:8000/records-stage.html
 `events_cache.js`, then embeds their compact metadata into
 `records-stage.html`. The page remains fully compatible with GitHub Pages and
 requires no database or live API for the demonstration.
+
+## Rebuild The FRUS Subject Index
+
+The deployed FRUS index is generated from the subject mappings in
+[`therealjameswilson/frus-subjects`](https://github.com/therealjameswilson/frus-subjects)
+and the official lightweight TOC files in
+[`HistoryAtState/frus`](https://github.com/HistoryAtState/frus). It contains
+identifiers, volume spans, subject flags, and chapter context only. It does not
+contain document body text. The subject-mapping repository is currently private;
+an authorized checkout is required to rebuild the generated index.
+
+```bash
+python build_frus_subject_index.py \
+  --subjects-root ../frus-subjects \
+  --toc-root ../frus/frus-toc
+```
+
+See `docs/frus-subject-index.md` for the corpus boundary, interpretation
+caveats, provenance fields, and sparse-checkout commands.
 
 ## Records Studio
 

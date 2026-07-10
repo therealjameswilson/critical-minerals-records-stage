@@ -236,13 +236,43 @@
         <div class="frus-layout">
           <div class="frus-panel">
             <div class="frus-stats" id="frusStats"></div>
-            <div class="record-list" id="frusRecords"></div>
+            <div class="frus-controls">
+              <div class="control frus-search-control">
+                <label for="frusQuery">Search volume context, document number, or verified title</label>
+                <input id="frusQuery" type="search" placeholder="Try strategic materials, Chile, bauxite, or d395">
+              </div>
+              <div class="control">
+                <label for="frusSubject">Subject authority</label>
+                <select id="frusSubject"></select>
+              </div>
+              <div class="control">
+                <label for="frusFromYear">From volume year</label>
+                <select id="frusFromYear"></select>
+              </div>
+              <div class="control">
+                <label for="frusToYear">To volume year</label>
+                <select id="frusToYear"></select>
+              </div>
+            </div>
+            <div class="frus-result-bar">
+              <strong id="frusResultsCount">Loading FRUS index</strong>
+              <button class="filter-chip" id="frusClear" type="button">Clear FRUS filters</button>
+            </div>
+            <p class="frus-corpus-note" id="frusCorpusNote"></p>
+            <div class="record-list" id="frusRecords" aria-live="polite"></div>
+            <button class="button-link frus-load-more" id="frusLoadMore" type="button">Show more documents</button>
           </div>
           <aside class="source-panel">
-            <h3>Ask the FRUS record</h3>
-            <p>Natural-language queries resolve against indexed metadata and return documents, never uncited generated claims.</p>
+            <h3>Authority coverage</h3>
+            <p>The complete mappings for Minerals and metals and Natural resources are included, with exact Bauxite and Sea bed mining assignments retained as additional facets.</p>
+            <div class="frus-authority-list" id="frusAuthorityList"></div>
+            <h3 class="frus-query-heading">Research starting points</h3>
+            <p>These queries search official volume context and the small set of document titles already verified in this portal.</p>
             <div class="record-list" id="frusQueries"></div>
-            <a class="button-link" href="https://history.state.gov/historicaldocuments" target="_blank" rel="noopener">Browse all FRUS volumes ↗</a>
+            <div class="source-links">
+              <a class="button-link" href="https://history.state.gov/historicaldocuments" target="_blank" rel="noopener">Browse FRUS volumes ↗</a>
+              <a class="button-link" href="https://github.com/therealjameswilson/critical-minerals-records-stage/blob/main/docs/frus-subject-index.md" target="_blank" rel="noopener">Index methodology ↗</a>
+            </div>
           </aside>
         </div>
       </section>
@@ -321,6 +351,7 @@
     </div>
   </footer>
 
+  <script src="assets/frus-subjects-index.js"></script>
   <script src="data/portal-data.js"></script>
   <script>
     const SUBJECT_TAXONOMY = [{"n":"Critical minerals","c":"Energy technologies","sc":"Energy criticality"},{"n":"Ministerial follow-up","c":"Ministerial follow-up","sc":"FSO outputs"},{"n":"Historical diplomacy","c":"Historical diplomacy","sc":"Historical and archival evidence"},{"n":"Archival discovery","c":"Historical diplomacy","sc":"Historical and archival evidence"},{"n":"FRUS context","c":"Historical diplomacy","sc":"Historical and archival evidence"},{"n":"Trade and import reliance","c":"Trade and import reliance","sc":"Trade data"},{"n":"HS-code proxy","c":"Trade and import reliance","sc":"Trade data"},{"n":"Lithium","c":"Battery minerals","sc":"Core battery inputs"},{"n":"Cobalt","c":"Battery minerals","sc":"Core battery inputs"},{"n":"Nickel","c":"Battery minerals","sc":"Core battery inputs"},{"n":"Graphite","c":"Battery minerals","sc":"Core battery inputs"},{"n":"Rare earth elements","c":"Rare earth elements","sc":"REE diplomacy and processing"},{"n":"Neodymium","c":"Rare earth elements","sc":"REE diplomacy and processing"},{"n":"Dysprosium","c":"Rare earth elements","sc":"REE diplomacy and processing"},{"n":"Gallium","c":"Semiconductor materials","sc":"Chip supply chains"},{"n":"Germanium","c":"Semiconductor materials","sc":"Chip supply chains"},{"n":"Processing and refining","c":"Processing and refining","sc":"Midstream capacity"},{"n":"Recycling and circularity","c":"Processing and refining","sc":"Midstream capacity"},{"n":"Infrastructure and finance","c":"Processing and refining","sc":"Midstream capacity"},{"n":"Strategic stockpiling","c":"Defense industrial base","sc":"Strategic materials"},{"n":"Defense industrial base","c":"Defense industrial base","sc":"Strategic materials"},{"n":"Energy technologies","c":"Energy technologies","sc":"Energy criticality"},{"n":"Resource nationalism","c":"Resource nationalism","sc":"Political economy"},{"n":"Environmental and labor issues","c":"Resource nationalism","sc":"Political economy"},{"n":"Investment climate","c":"Resource nationalism","sc":"Political economy"},{"n":"Policy document","c":"Ministerial follow-up","sc":"FSO outputs"},{"n":"Federal Register","c":"Ministerial follow-up","sc":"FSO outputs"}];
